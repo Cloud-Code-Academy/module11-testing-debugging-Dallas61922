@@ -1,73 +1,25 @@
-/*
- * The `LeadTriggerHandler` class contains methods designed to handle various business requirements around
- * the Lead object in Salesforce. This includes functionality like normalizing the title field of a lead, 
- * automatically scoring leads based on certain criteria, and auto-converting leads when certain conditions are met.
- * - Create a test class for `LeadTriggerHandler` to ensure all methods work as expected.
- * - Update the LeadTrigger class to call the `LeadTriggerHandler` methods as needed.
- *
- * Students should note:
- * - This class may contain intentional errors that need to be fixed for proper functionality.
- * - Create a corresponding test class for `LeadTriggerHandler` to ensure all methods work as expected.
- *   Both positive and negative test cases should be considered.
- *
- * Documentation on Lead conversion and Test Classes can be found here:
- * https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_dml_convertLead.htm
- * https://developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_methods_system_test.htm
- */
-public with sharing class LeadTriggerHandler extends TriggerHandler{
+public with sharing class LeadTriggerHelper extends TriggerHandler { 
 
-	private List<Lead> newLeadList;
+    private List<Lead> newLeadList;
 	private List<Lead> oldLeadList;
 	private Map<Id, Lead> newLeadMap;
 	private Map<Id, Lead> oldLeadMap;
 	
-	public LeadTriggerHandler() {
+    
+    public LeadTriggerHelper() {
 		this.newLeadList = (List<Lead>)Trigger.new;
 		this.oldLeadList = (List<Lead>)Trigger.old;
 		this.newLeadMap = (Map<Id, Lead>)Trigger.newMap;
 		this.oldLeadMap = (Map<Id, Lead>)Trigger.oldMap;
 		}
-	public override void beforeInsert(){
 
-		LeadTriggerHelper.handleTitleNormalization(this.newLeadList);
-		LeadTriggerHelper.handleAutoLeadScoring(this.newLeadList);
-	}
-	
-	public override void beforeUpdate(){
-		LeadTriggerHelper.handleTitleNormalization(this.newLeadList);
-		LeadTriggerHelper.handleAutoLeadScoring(this.newLeadList);
-	}
-	public override void afterInsert(){
-		LeadTriggerHelper.handleLeadAutoConvert(this.newLeadList);
-	}
-	public override void afterUpdate(){
-		LeadTriggerHelper.handleLeadAutoConvert(this.newLeadList);
-	}
-}	
-	/* 
-	 * Question 1
-	 * Requirement Lead Title Normalization - handleTitleNormalization
-	 * Occasionally, users input titles in a variety of ways. Streamline these titles for consistency:
-	 *
-	 * Criteria:
-	 * - If the title contains terms such as 'vp', 'v.p.', or 'vice president',
-	 *   change the title to 'Vice President'.
-	 * - If the title contains terms like 'mgr', 'manage', or 'head of department',
-	 *   change the title to 'Manager'.
-	 * - Should the title include words like 'exec', 'chief', or 'head',
-	 *   change the title to 'Executive'.
-	 * - If the title contains terms like 'assist', 'deputy', or 'jr',
-	 *   change the title to 'Assistant'.
-	 */
-
-	//Moved to LeadTriggerHelper
-	//public static void handleTitleNormalization(List<Lead> leadsToNormalize) { 
-		/*for (Lead ld : this.newLeadList) {
+    public static void handleTitleNormalization(List<Lead> leadsToNormalize) {
+        for (Lead ld : leadsToNormalize) {
 
 			if (ld.title == null){
 				Break;
 			}
-			else if (ld.title == 'vp' || ld.title.contains('v.p.') || ld.title.contains('vice president')) {
+			else if (ld.title.contains('vp') || ld.title.contains('v.p.') || ld.title.contains('vice president')) {
 				ld.Title = 'Vice President';
 			} 
 			else if (ld.title.contains('mgr') || ld.title.contains('manage') || ld.title.contains('head of department')) {
@@ -79,23 +31,20 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
 			else if (ld.title.contains('assist') || ld.title.contains('deputy') || ld.title == 'jr') {
 				ld.Title = 'Assistant';
 			}
-		}*/
-	
-
-
-	/* 
-	 * Question 2
-	 * Requirement Auto Lead Scoring - handleAutoLeadScoring
-	 * Implement logic to automatically assign scores to leads based on specific criteria.
-	 * 18 should be highest possible score a lead can have.
-	 *
-	 * Criteria:
-	 * - If the lead source is from the website and an email exists, increment score by 3 points.
-	 * - If the lead provides a phone number, increment score by 5 points.
-	 * - If the lead belongs to the 'Technology' industry, increment score by another 10 points.
-	 */
-	//Moved to LeadTriggerHelper
-	/*  public static void handleAutoLeadScoring(List<Lead> leadsToScore) {
+			
+    }
+}
+/*Question 2
+* Requirement Auto Lead Scoring - handleAutoLeadScoring
+* Implement logic to automatically assign scores to leads based on specific criteria.
+* 18 should be highest possible score a lead can have.
+*
+* Criteria:
+* - If the lead source is from the website and an email exists, increment score by 3 points.
+* - If the lead provides a phone number, increment score by 5 points.
+* - If the lead belongs to the 'Technology' industry, increment score by another 10 points.
+*/
+    public static void handleAutoLeadScoring(List<Lead> leadsToScore) {
         for (Lead ld : leadsToScore) {
             Integer score = 0; 
             // Check and add points based on the specified conditions
@@ -113,9 +62,8 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
             }
             ld.Lead_Score__c = score;
         }  
-    }*/
-
-	/* 
+    }
+/* 
 	 * Question 3
 	 * Requirement Automatic Lead Conversion Based on Email Match - handleLeadAutoConvert
 	 * Whenever a new Lead is created or an existing Lead's email address is updated,
@@ -138,9 +86,7 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
 	 * - One of the errors is recursion related. Check if the lead is already converted or check if the email has changed/is null
 	 * - One of the errors is map related. Make sure you are using the correct contact map key
 	 */
-
-	//when editing the method I will need to copy and paste back in here
-	/*public static void handleLeadAutoConvert(List<Lead> leads) {
+    public static void handleLeadAutoConvert(List<Lead> leads) {
 		// Step 1: Gather all lead emails
         Map<Id, Lead> oldLeadMap = new Map<Id, Lead>();
         oldLeadMap = (Map<Id, Lead>)Trigger.oldMap;
@@ -200,4 +146,6 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
            
 		}
 	}
-}*/
+}
+}
+
